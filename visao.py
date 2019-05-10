@@ -77,31 +77,34 @@ def retira_bordas(frame, tamanho_borda):
     col = int(frame.shape[1]*(tamanho_borda/100.0))
     return frame[lin:frame.shape[0]-lin, col:frame.shape[1]-col]
 
-def filtros_exib(frame):
+def escreve(frame, texto):
+    cv.putText(frame, texto, (1, 15), cv.FONT_HERSHEY_PLAIN, 1, (0, 255, 255), 3, cv.LINE_AA)
+    cv.putText(frame, texto, (1, 15), cv.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 1, cv.LINE_AA)
+
+
+def filtro_1(frame):
+    frame = cv.blur(frame, (3, 3))
     frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-    #frame = cv.GaussianBlur(frame, (3, 3), 0)
+    #frame =  cv.adaptiveThreshold(frame, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY,11,2)   
     frame = cv.equalizeHist(frame)
+    
+    
     frame = cv.cvtColor(frame, cv.COLOR_GRAY2BGR)
     return frame
 
-def filtros_proc(frame):
-    #frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-    #frame = cv.blur(frame, (3, 3))
-    #frame = cv.GaussianBlur(frame, (3, 3), 0)
-    #frame = cv.medianBlur(frame, 3)
-    #frame = cv.equalizeHist(frame)
-    #frame = cv.cvtColor(frame, cv.COLOR_GRAY2BGR)
+def filtro_2(frame):
+    frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    frame = cv.blur(frame, (3, 3))
+    frame = cv.cvtColor(frame, cv.COLOR_GRAY2BGR)
     return frame
 
 
 
 if __name__ == '__main__':
     print("Iniciando, por favor aguarde...")
-
-#    visao = Visao(config=config_temp)
+    
     vc = VideoCamera(tipo_fonte='video', arquivo='video1.mp4')
     visao = Visao()
-
 
     # Seta ROI (Region of Interest)
     #success, frame = vc.get_frame()
@@ -121,12 +124,17 @@ if __name__ == '__main__':
         frame = frame[int(roi[1]):int(roi[1]+roi[3]), int(roi[0]):int(roi[0]+roi[2])]
         
         # Aplic filtros para melhorar a imagem
-        frame_exib = filtros_exib(frame)
-
-        frame_proc = visao.run_frame(filtros_proc(frame))
         
-        saida = np.vstack([np.hstack([frame, frame_proc]),np.hstack([frame_exib, frame_proc])])
-        cv.imshow("Electron # Autores: Ricardo Antonello e Thiago Tavares", saida)
+        frame_eq = filtro_1(frame)
+        frame_1 = visao.run_frame(frame)
+        frame_2 = visao.run_frame(filtro_2(frame))
+        escreve(frame_eq, 'Equalizado')
+        escreve(frame_1, 'Filtro 1')
+        escreve(frame_2, 'Filtro 2')
+        escreve(frame, 'Original')
+
+        saida = np.vstack([np.hstack([frame, frame_eq]),np.hstack([frame_1, frame_2])])
+        cv.imshow("Millikan Carga do Eletron # Autores: Madge Bianchi dos Santos, Ricardo Antonello e Thiago Tavares", saida)
         if cv.waitKey(1) & 0xFF == ord('q'):
             break
 

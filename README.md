@@ -1,5 +1,8 @@
-# eletron  
-Medição da velocidade de um elétron por visão computacional  
+# Millikan Carga do Eletron 
+Autores: Madge Bianchi dos Santos, Ricardo Antonello e Thiago Tavares", saida)  
+ricardo@antonello.com.br  
+
+## Medição da velocidade de um elétron por visão computacional  
 
 
 ### Instruções para utilizaço no Ubuntu 16 (ou superior)  
