@@ -1,6 +1,6 @@
 # Millikan Carga do Eletron 
-Autores: Madge Bianchi dos Santos, Ricardo Antonello e Thiago Tavares", saida)  
-ricardo@antonello.com.br  
+Autores: Madge Bianchi dos Santos, Ricardo Antonello e Thiago Tavares",  
+ricardo@antonello.com.br (incluir os outros e-mails)
 
 ## Medição da velocidade de um elétron por visão computacional  
 
