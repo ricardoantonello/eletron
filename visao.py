@@ -38,7 +38,7 @@ class VideoCamera(object):
       else:
         return False, frame;    
 
-class Visao:
+class Engine:
     
     def __init__(self):
         self.frame = None
@@ -80,7 +80,7 @@ def retira_bordas(frame, tamanho_borda):
 def escreve(frame, texto):
     cv.putText(frame, texto, (1, 15), cv.FONT_HERSHEY_PLAIN, 1, (0, 255, 255), 3, cv.LINE_AA)
     cv.putText(frame, texto, (1, 15), cv.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 1, cv.LINE_AA)
-
+    return frame
 
 def filtro_1(frame):
     frame = cv.blur(frame, (3, 3))
@@ -98,21 +98,20 @@ def filtro_2(frame):
     frame = cv.cvtColor(frame, cv.COLOR_GRAY2BGR)
     return frame
 
-
+        
 
 if __name__ == '__main__':
     print("Iniciando, por favor aguarde...")
-    
     vc = VideoCamera(tipo_fonte='video', arquivo='video1.mp4')
-    visao = Visao()
+    engine = Engine()
 
     # Seta ROI (Region of Interest)
-    #success, frame = vc.get_frame()
-    #if not success:
-    #    print('!! Erro acessando fonte de dados')
-    #roi = cv.selectROI(frame)
-    #print('>> ROI:', roi)
-    roi = (851, 402, 750, 470)
+    success, frame = vc.get_frame()
+    if not success:
+        print('!! Erro acessando fonte de dados')
+    roi = cv.selectROI(frame)
+    print('>> ROI:', roi)
+    #roi = (851, 402, 750, 470)
 
     while(1):
         success, frame = vc.get_frame()
@@ -126,8 +125,8 @@ if __name__ == '__main__':
         # Aplic filtros para melhorar a imagem
         
         frame_eq = filtro_1(frame)
-        frame_1 = visao.run_frame(frame)
-        frame_2 = visao.run_frame(filtro_2(frame))
+        frame_1 = engine.run_frame(frame)
+        frame_2 = engine.run_frame(filtro_2(frame))
         escreve(frame_eq, 'Equalizado')
         escreve(frame_1, 'Filtro 1')
         escreve(frame_2, 'Filtro 2')
@@ -141,5 +140,4 @@ if __name__ == '__main__':
     cv.destroyAllWindows()
     print('>> Resultados:')
     print('Velocidade média:', 33)
-        
     print('>> Fim!')

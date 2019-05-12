@@ -5,6 +5,9 @@ from tkinter import filedialog, messagebox
 import rrTkinterLib as rr # biblioteca personalizada de interface
 from PIL import Image, ImageTk
 import cv2 as cv
+import visao
+
+import numpy as np
 
 class AboutWindow(tk.Frame): # aqui teremos os widgets da tela
     def __init__(self, master=None): 
@@ -46,7 +49,7 @@ class MainWindow(tk.Frame): # aqui teremos os widgets da tela
         self.master.config(menu=menubar)
         fileMenu = tk.Menu(menubar, tearoff=0)
         fileMenu.add_command(label="Abrir vídeo", command=self.openVideo)
-        fileMenu.add_command(label="Usar câmera", command=self.openVideo)
+        fileMenu.add_command(label="Usar câmera", command=self.openCamera)
         fileMenu.add_separator()
         fileMenu.add_command(label="Sair", command=root.quit)
         menubar.add_cascade(label="Arquivo", menu=fileMenu)
@@ -89,19 +92,6 @@ class MainWindow(tk.Frame): # aqui teremos os widgets da tela
         self.quit.grid(column=1, row=6, sticky='S', padx=1, pady=1)
         self.quit.focus_force()
 
-    def atualizaImagem(self):
-        img = Image.open('ifc_logo.png')
-        img_width, img_height = img.size
-        #logo = logo.resize((logo_width//2, logo_height//2), Image.ANTIALIAS) #The (250, 250) is (height, width)
-        img = ImageTk.PhotoImage(img)
-        
-        self.canvas = tk.Canvas(self.master, width=img_width, height=img_height, bg='white')
-        self.canvas['borderwidth']=0
-        self.canvas.grid(column=3, row=1, rowspan=4, padx=1, pady=1)
-        tk.Label().photo = img  # bug: a imagem estar num label qualquer para aparecer no canvas 
-        # Add a PhotoImage to the Canvas
-        self.canvas.create_image(0, 0, image=img, anchor=tk.NW, tag='img1')
-    
     def openAbout(self):
         aboutWindow = AboutWindow(master=tk.Tk()) 
         aboutWindow.mainloop() 
@@ -112,16 +102,70 @@ class MainWindow(tk.Frame): # aqui teremos os widgets da tela
     def openVideo(self):
         ftypes = [('Vídeos mp4', '*.mp4'), ('All files', '*')]
         path = tk.filedialog.askopenfilename(filetypes=ftypes)
-        if path != '':
-            print(path)
-# Load an image using OpenCV
-        cv_img = cv.imread("teste.png")
-        # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
-        height, width, no_channels = cv_img.shape
-        # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
-        photo = ImageTk.PhotoImage(image = Image.fromarray(cv_img))
-                    
-    
+        if path == '':
+            return
+        print(path)
+        print("Iniciando, por favor aguarde...")
+        vc = visao.VideoCamera(tipo_fonte='video', arquivo=path)
+        engine = visao.Engine()
+
+        # Seta ROI (Region of Interest)
+        messagebox.showinfo("Atenção", "Selecione a área de interesse e pressione [Enter].")
+        success, frame = vc.get_frame()
+        if not success:
+            print('!! Erro acessando fonte de dados')
+        roi = cv.selectROI(frame[::2,::2]) #diminui a imagem para escolher regiao de interesse
+        #print('>> ROI:', roi)
+        roi = (roi[0]*2, roi[1]*2, roi[2]*2, roi[3]*2)
+        #print('>> ROI:', roi)
+        #roi = (851, 402, 750, 470) #utilizado apenas para testes
+        
+        #Cria Canvas
+        frame = frame[int(roi[1]):int(roi[1]+roi[3]), int(roi[0]):int(roi[0]+roi[2])]
+        img_width, img_height = frame.shape[1], frame.shape[0] 
+        print('Shape:', img_width, img_height)
+        #logo = logo.resize((logo_width//2, logo_height//2), Image.ANTIALIAS) #The (250, 250) is (height, width)
+        frame = ImageTk.PhotoImage(frame)
+        self.canvas = tk.Canvas(self.master, width=img_width, height=img_height, bg='white')
+        self.canvas['borderwidth']=0
+        self.canvas.grid(column=3, row=1, rowspan=5, padx=1, pady=1)
+        tk.Label().photo = frame  # bug: a imagem estar num label qualquer para aparecer no canvas 
+        self.canvas.create_image(0, 0, image=frame, anchor=tk.NW, tag='nao usado')
+
+        while(1):
+            success, frame = vc.get_frame()
+            if not success:
+                break
+            # Recorta (crop) regiao selecionada
+            frame = frame[int(roi[1]):int(roi[1]+roi[3]), int(roi[0]):int(roi[0]+roi[2])]
+            # Aplic filtros para melhorar a imagem
+            frame_eq = visao.filtro_1(frame)
+            frame_1 = engine.run_frame(frame)
+            frame_2 = engine.run_frame(visao.filtro_2(frame))
+            visao.escreve(frame_eq, 'Equalizado')
+            visao.escreve(frame_1, 'Filtro 1')
+            visao.escreve(frame_2, 'Filtro 2')
+            visao.escreve(frame, 'Original')
+
+            # Load an image using OpenCV
+            cv_img = cv.imread("teste.png")
+            # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+            height, width, no_channels = cv_img.shape
+            # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
+            photo = ImageTk.PhotoImage(image = Image.fromarray(cv_img))
+        
+
+            saida = np.vstack([np.hstack([frame, frame_eq]),np.hstack([frame_1, frame_2])])
+            
+            
+            cv.imshow("Millikan Carga do Eletron # Autores: Madge Bianchi dos Santos, Ricardo Antonello e Thiago Tavares", saida)
+            if cv.waitKey(1) & 0xFF == ord('q'):
+                break
+
+        cv.destroyAllWindows()
+        print('>> Resultados:')
+        print('Velocidade média:', 33)
+        print('>> Fim!')
     
 root = tk.Tk() # biblioteca TK permite que os widgets sejam usados
 app = MainWindow(root) # app será a tela principal da aplicação 
