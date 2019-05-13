@@ -1,5 +1,3 @@
-#https://solarianprogrammer.com/2018/04/21/python-opencv-show-video-tkinter-window/
-
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import rrTkinterLib as rr # biblioteca personalizada de interface
