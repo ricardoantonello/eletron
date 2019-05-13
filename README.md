@@ -14,6 +14,7 @@ git clone https://github.com/ricardoantonello/eletron.git
 cd eletron  
 sudo apt install python3-venv  
 sudo apt install python3-tk
+sudo apt install vlc
 python3 -m venv venv   
 source venv/bin/activate  
 venv/bin/pip3 install opencv-python opencv-contrib-python pillow  

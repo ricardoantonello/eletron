@@ -10,7 +10,7 @@ class Label(tk.Label):
         #inicializa pai com mesmos argumentos
         super().__init__(master=master, text=text, fg=fg, bg=bg, font=font, height=height, width=width) 
         self['fg']='darkgreen' if fg==None else fg 
-        self['bg']=bg
+        self['bg']='white' if bg==None else bg
         self['font']=FONTE if font==None else font
         self['borderwidth']=0
         self['padx']=30
