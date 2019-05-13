@@ -19,5 +19,6 @@ python3 -m venv venv
 source venv/bin/activate  
 venv/bin/pip3 install opencv-python opencv-contrib-python pillow  
 
-
+## Screenshot  
+![alt text](https://github.com/ricardoantonello/eletron/blob/master/Screenshot%20from%202019-05-13%2014-27-25.png)
 
